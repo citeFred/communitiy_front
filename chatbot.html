@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 챗봇</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-window { height: 60vh; overflow-y: auto; border: 1px solid #dee2e6; padding: 1rem; border-radius: .375rem; background-color: #f8f9fa; }
+        .chat-message { margin-bottom: 1rem; padding: .75rem; border-radius: .375rem; max-width: 80%; }
+        .user-message { background-color: #0d6efd; color: white; margin-left: auto; text-align: right; }
+        .assistant-message { background-color: #e9ecef; color: #212529; margin-right: auto; }
+        .list-group-item-action { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header class="p-3 mb-3 border-bottom">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                <div>
+                    <a href="board.html" class="h4 text-dark text-decoration-none me-4">게시판</a>
+                    <a href="chatbot.html" class="h4 text-dark text-decoration-none fw-bold">AI 챗봇</a>
+                </div>
+                <div>
+                    <span id="welcome-message" class="me-3"></span>
+                    <button id="logout-button" class="btn btn-outline-primary">로그아웃</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="room-selection-view" class="view">
+            <div class="text-center">
+                <h2 class="pb-2 border-bottom">AI 챗봇</h2>
+                <p class="lead my-4">AI와 새로운 대화를 시작하거나, 이전 대화를 이어서 하세요.</p>
+            </div>
+            <div class="card my-4">
+                 <div class="card-body">
+                    <h5 class="card-title">새 대화 시작</h5>
+                    <form id="create-room-form" class="d-flex">
+                        <input type="text" name="roomTitle" class="form-control me-2" placeholder="새 대화방 제목" required>
+                        <button type="submit" class="btn btn-primary text-nowrap">생성</button>
+                    </form>
+                </div>
+            </div>
+            <hr>
+            <h4>이전 대화 목록</h4>
+            <div id="room-list" class="list-group"></div>
+        </div>
+
+        <div id="chat-view" class="view d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                 <h2 id="chat-room-title" class="pb-2"></h2>
+                 <button id="back-to-selection" class="btn btn-secondary">대화방 목록으로</button>
+            </div>
+            <div id="chat-window" class="chat-window"></div>
+            <form id="chat-form" class="mt-3">
+                <div class="input-group">
+                    <input type="text" id="message-input" class="form-control" placeholder="메시지를 입력하세요..." autocomplete="off" required>
+                    <button class="btn btn-success" type="submit">전송</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        let currentChatRoomId = null;
+
+        const views = document.querySelectorAll('.view');
+        const logoutButton = document.getElementById('logout-button');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const chatWindow = document.getElementById('chat-window');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                alert('로그인이 필요합니다.');
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                welcomeMessage.textContent = `${payload.sub}님, 환영합니다.`;
+            } catch (e) {
+                handleLogout();
+            }
+            loadChatRooms();
+            showView('room-selection-view');
+            setupEventListeners();
+        });
+        
+        function showView(viewId) {
+            views.forEach(view => view.classList.add('d-none'));
+            document.getElementById(viewId).classList.remove('d-none');
+        }
+
+        async function fetchAPI(url, options = {}) {
+            const token = localStorage.getItem('accessToken');
+            const headers = { 'Content-Type': 'application/json', ...options.headers };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            const response = await fetch(API_BASE_URL + url, { ...options, headers });
+            if (response.status === 401) handleLogout();
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        }
+
+        async function loadChatRooms() {
+            try {
+                const rooms = await fetchAPI('/chatbot/rooms');
+                const list = document.getElementById('room-list');
+                list.innerHTML = '';
+                if (rooms.length === 0) {
+                    list.innerHTML = '<div class="list-group-item">이전 대화가 없습니다.</div>';
+                } else {
+                    rooms.forEach(room => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.className = 'list-group-item list-group-item-action';
+                        a.textContent = room.title;
+                        a.onclick = () => enterChatRoom(room.id, room.title);
+                        list.appendChild(a);
+                    });
+                }
+            } catch (error) { console.error('대화방 목록 로딩 실패:', error); }
+        }
+
+        async function enterChatRoom(roomId, roomTitle) {
+            currentChatRoomId = roomId;
+            document.getElementById('chat-room-title').textContent = roomTitle;
+            chatWindow.innerHTML = '';
+            
+            try {
+                const dialogs = await fetchAPI(`/chatbot/rooms/${roomId}/messages`);
+                dialogs.forEach(dialog => {
+                    appendMessage(dialog.senderType, dialog.content);
+                });
+            } catch (error) {
+                console.error('이전 대화 로딩 실패:', error);
+                appendMessage('ASSISTANT', '이전 대화를 불러오는 데 실패했습니다.');
+            }
+            
+            showView('chat-view');
+        }
+
+        function appendMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = text;
+            messageDiv.className = `chat-message ${sender === 'USER' ? 'user-message' : 'assistant-message'}`;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('accessToken');
+            window.location.href = 'login.html';
+        }
+
+        async function handleCreateRoom(event) {
+            event.preventDefault();
+            const form = event.target;
+            const title = form.roomTitle.value;
+            try {
+                const room = await fetchAPI('/chatbot/rooms', {
+                    method: 'POST',
+                    body: JSON.stringify({ title })
+                });
+                form.reset();
+                loadChatRooms();
+                enterChatRoom(room.id, room.title);
+_            } catch (error) {
+                console.error('대화방 생성 실패:', error);
+                alert('대화방 생성에 실패했습니다.');
+            }
+        }
+
+        async function handleSendMessage(event) {
+            event.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            appendMessage('USER', message);
+            input.value = '';
+
+            try {
+                const response = await fetchAPI(`/chatbot/rooms/${currentChatRoomId}/messages`, {
+                    method: 'POST',
+                    body: JSON.stringify({ message })
+                });
+                appendMessage('ASSISTANT', response.response);
+            } catch (error) {
+                console.error('메시지 전송 실패:', error);
+                appendMessage('ASSISTANT', '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            }
+        }
+
+        function setupEventListeners() {
+            logoutButton.addEventListener('click', handleLogout);
+            document.getElementById('create-room-form').addEventListener('submit', handleCreateRoom);
+            document.getElementById('chat-form').addEventListener('submit', handleSendMessage);
+            document.getElementById('back-to-selection').addEventListener('click', () => {
+                showView('room-selection-view');
+                currentChatRoomId = null;
+            });
+        }
+    </script>
+</body>
+</html>

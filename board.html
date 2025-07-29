@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>커뮤니티 게시판</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .list-group-item-action { cursor: pointer; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <header class="p-3 mb-3 border-bottom">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                <div>
+                    <a href="board.html" class="h4 text-dark text-decoration-none me-4">게시판</a>
+                    <a href="chatbot.html" class="h4 text-dark text-decoration-none">AI 챗봇</a>
+                </div>
+                <div>
+                    <span id="welcome-message" class="me-3"></span>
+                    <button id="logout-button" class="btn btn-outline-primary">로그아웃</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="boards-view" class="view">
+            <h2 class="pb-2 border-bottom">게시판 목록</h2>
+            <div class="card my-4">
+                <div class="card-body">
+                    <h5 class="card-title">새 게시판 생성 (Admin Only)</h5>
+                    <form id="create-board-form" class="d-flex">
+                        <input type="text" name="boardTitle" class="form-control me-2" placeholder="새 게시판 이름" required>
+                        <button type="submit" class="btn btn-success text-nowrap">생성</button>
+                    </form>
+                    <div id="board-error" class="form-text text-danger mt-2"></div>
+                </div>
+            </div>
+            <div id="board-list" class="list-group"></div>
+        </div>
+
+        <div id="articles-view" class="view d-none">
+            <div class="d-flex justify-content-between align-items-center">
+                 <h2 id="articles-title" class="pb-2 border-bottom">게시글 목록</h2>
+                 <button id="back-to-boards" class="btn btn-secondary">게시판 목록으로</button>
+            </div>
+            <div class="card my-4">
+                <div class="card-body">
+                    <h5 class="card-title">새 게시글 작성</h5>
+                    <form id="create-article-form">
+                        <div class="mb-3">
+                            <label for="article-create-title" class="form-label">제목</label>
+                            <input type="text" id="article-create-title" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="article-create-content" class="form-label">내용</label>
+                            <textarea id="article-create-content" name="content" class="form-control" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="article-create-file" class="form-label">첨부 파일 (선택)</label>
+                            <input type="file" id="article-create-file" name="file" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">작성하기</button>
+                    </form>
+                    <div id="article-error" class="form-text text-danger mt-2"></div>
+                </div>
+            </div>
+            <div id="article-list" class="list-group mt-4"></div>
+        </div>
+        
+        <div id="article-detail-view" class="view d-none">
+            <div class="d-flex justify-content-between align-items-center">
+                 <h2 id="article-title" class="pb-2"></h2>
+                 <button id="back-to-articles" class="btn btn-secondary">게시글 목록으로</button>
+            </div>
+            <div class="text-muted border-bottom pb-2 mb-3">
+                <strong id="article-author"></strong> | <span id="article-createdAt"></span>
+            </div>
+            
+            <div id="file-list" class="mb-3"></div>
+            
+            <pre id="article-content" class="bg-light p-3 rounded"></pre>
+            <hr>
+            <h3>댓글</h3>
+            <div class="card my-4">
+                <div class="card-body">
+                    <h5 class="card-title">댓글 작성</h5>
+                    <form id="create-comment-form">
+                        <div class="mb-3">
+                            <textarea name="commentContent" class="form-control" rows="3" placeholder="댓글을 입력하세요..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info">댓글 등록</button>
+                    </form>
+                     <div id="comment-error" class="form-text text-danger mt-2"></div>
+                </div>
+            </div>
+            <ul id="comment-list" class="list-group"></ul>
+        </div>
+    </main>
+
+    <script>
+        // (대부분의 JavaScript 코드는 이전과 동일)
+        const API_BASE_URL = 'http://localhost:8080/api';
+        let currentBoard = { id: null, title: null };
+        let currentArticleId = null;
+
+        const views = document.querySelectorAll('.view');
+        const logoutButton = document.getElementById('logout-button');
+        const welcomeMessage = document.getElementById('welcome-message');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                alert('로그인이 필요합니다.');
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                welcomeMessage.textContent = `${payload.sub}님, 환영합니다.`;
+            } catch (e) {
+                console.error("Invalid Token:", e);
+                handleLogout();
+            }
+            loadBoards();
+            showView('boards-view');
+            setupEventListeners();
+        });
+        
+        function showView(viewId) {
+            views.forEach(view => view.classList.add('d-none'));
+            document.getElementById(viewId).classList.remove('d-none');
+        }
+
+        async function fetchAPI(url, options = {}) {
+            const token = localStorage.getItem('accessToken');
+            const headers = { ...options.headers };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            if (options.body && !(options.body instanceof FormData)) {
+                headers['Content-Type'] = 'application/json';
+            }
+            const response = await fetch(API_BASE_URL + url, { ...options, headers });
+            if (response.status === 401) handleLogout();
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.status === 204 ? null : response.json();
+        }
+        
+        async function loadBoards() {
+            try {
+                const boards = await fetchAPI('/boards');
+                const list = document.getElementById('board-list');
+                list.innerHTML = '';
+                if (boards.length === 0) {
+                    list.innerHTML = '<div class="list-group-item">생성된 게시판이 없습니다.</div>';
+                } else {
+                    boards.forEach(board => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.className = 'list-group-item list-group-item-action';
+                        a.textContent = board.title;
+                        a.onclick = () => {
+                            currentBoard = { id: board.id, title: board.title };
+                            loadArticles(currentBoard.id, currentBoard.title);
+                        };
+                        list.appendChild(a);
+                    });
+                }
+            } catch (error) { console.error('게시판 로딩 실패:', error); }
+        }
+
+        async function loadArticles(boardId, boardTitle) {
+            try {
+                const data = await fetchAPI(`/boards/${boardId}/articles`);
+                const list = document.getElementById('article-list');
+                document.getElementById('articles-title').textContent = boardTitle;
+                list.innerHTML = '';
+                if (data.content.length === 0) {
+                    list.innerHTML = '<div class="list-group-item">작성된 게시글이 없습니다.</div>';
+                } else {
+                    data.content.forEach(article => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                        a.innerHTML = `<span>${article.title}</span> <small class="text-muted">${article.authorNickname}</small>`;
+                        a.onclick = () => loadArticleDetail(article.id);
+                        list.appendChild(a);
+                    });
+                }
+                showView('articles-view');
+            } catch (error) { console.error('게시글 로딩 실패:', error); }
+        }
+
+        // ===== `loadArticleDetail` 함수 수정 =====
+        async function loadArticleDetail(articleId) {
+            try {
+                currentArticleId = articleId;
+                const article = await fetchAPI(`/boards/${currentBoard.id}/articles/${articleId}`);
+                document.getElementById('article-title').textContent = article.title;
+                document.getElementById('article-author').textContent = `작성자: ${article.authorNickname}`;
+                document.getElementById('article-createdAt').textContent = `작성일: ${new Date(article.createAt).toLocaleString()}`;
+                document.getElementById('article-content').textContent = article.content;
+                
+                // 첨부 파일 렌더링 함수 호출
+                renderFiles(article.files);
+                
+                renderComments(article.comments);
+                showView('article-detail-view');
+            } catch (error) { console.error('게시글 상세 로딩 실패:', error); }
+        }
+
+        // ===== `renderFiles` 함수 추가 =====
+        function renderFiles(files) {
+            const fileListDiv = document.getElementById('file-list');
+            fileListDiv.innerHTML = ''; // 초기화
+            if (files && files.length > 0) {
+                const listGroup = document.createElement('ul');
+                listGroup.className = 'list-group mb-3';
+                
+                const header = document.createElement('li');
+                header.className = 'list-group-item active';
+                header.textContent = '첨부 파일';
+                listGroup.appendChild(header);
+
+                files.forEach(file => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = file.originalFileName;
+                    // 다운로드 기능은 추후 구현 필요
+                    // const downloadLink = document.createElement('a');
+                    // downloadLink.href = '#'; // 다운로드 API 엔드포인트 필요
+                    // downloadLink.textContent = file.originalFileName;
+                    // li.appendChild(downloadLink);
+                    listGroup.appendChild(li);
+                });
+                fileListDiv.appendChild(listGroup);
+            }
+        }
+
+        function renderComments(comments) {
+            const commentList = document.getElementById('comment-list');
+            commentList.innerHTML = '';
+            if (comments && comments.length > 0) {
+                comments.forEach(comment => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    // 댓글 작성자 정보가 백엔드 응답에 없으므로 임시 처리
+                    li.innerHTML = `<strong>익명:</strong> ${comment.content}`;
+                    commentList.appendChild(li);
+                });
+            } else {
+                commentList.innerHTML = '<li class="list-group-item">댓글이 없습니다.</li>';
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('accessToken');
+            window.location.href = 'login.html';
+        }
+        
+        async function handleCreateBoard(event) {
+            event.preventDefault();
+            const form = event.target;
+            const title = form.boardTitle.value;
+            const errorDiv = document.getElementById('board-error');
+            errorDiv.textContent = '';
+            try {
+                await fetchAPI('/boards', { method: 'POST', body: JSON.stringify({ title }) });
+                form.reset();
+                loadBoards();
+            } catch (error) {
+                errorDiv.textContent = '게시판 생성 실패 (관리자 권한 필요)';
+                console.error('게시판 생성 실패:', error);
+            }
+        }
+        
+        async function handleCreateArticle(event) {
+            event.preventDefault();
+            const form = event.target;
+            const errorDiv = document.getElementById('article-error');
+            errorDiv.textContent = '';
+            const formData = new FormData();
+            const articleData = { title: form.title.value, content: form.content.value };
+            formData.append('articleData', new Blob([JSON.stringify(articleData)], { type: 'application/json' }));
+            if (form.file.files.length > 0) {
+                formData.append('file', form.file.files[0]);
+            }
+            try {
+                await fetchAPI(`/boards/${currentBoard.id}/articles`, { method: 'POST', body: formData });
+                form.reset();
+                await loadArticles(currentBoard.id, currentBoard.title);
+            } catch (error) {
+                errorDiv.textContent = '게시글 작성에 실패했습니다.';
+                console.error('게시글 생성 실패:', error);
+            }
+        }
+
+        async function handleCreateComment(event) {
+            event.preventDefault();
+            const form = event.target;
+            const content = form.commentContent.value;
+            const errorDiv = document.getElementById('comment-error');
+            errorDiv.textContent = '';
+
+            try {
+                await fetchAPI(`/boards/${currentBoard.id}/articles/${currentArticleId}/comments`, {
+                    method: 'POST',
+                    body: JSON.stringify({ content })
+                });
+                form.reset();
+                await loadArticleDetail(currentArticleId); // 댓글 등록 후 상세 정보 다시 로드
+            } catch (error) {
+                errorDiv.textContent = '댓글 작성에 실패했습니다.';
+                console.error('댓글 생성 실패:', error);
+            }
+        }
+
+        function setupEventListeners() {
+            logoutButton.addEventListener('click', handleLogout);
+            document.getElementById('create-board-form').addEventListener('submit', handleCreateBoard);
+            document.getElementById('create-article-form').addEventListener('submit', handleCreateArticle);
+            document.getElementById('create-comment-form').addEventListener('submit', handleCreateComment);
+            document.getElementById('back-to-boards').addEventListener('click', () => showView('boards-view'));
+            document.getElementById('back-to-articles').addEventListener('click', () => showView('articles-view'));
+        }
+    </script>
+</body>
+</html>
