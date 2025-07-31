@@ -12,6 +12,7 @@ import ArticleCreatePage from './pages/boards/ArticleCreatePage';
 import BoardManagementPage from './pages/admin/board-management/BoardManagementPage';
 import BoardCreatePage from './pages/admin/board-management/BoardCreatePage';
 import ChatbotPage from './pages/chatbot/ChatbotPage';
+import ProtectedRoute from './common/protected-route/ProtectedRoute';
 
 function App() {
   return (
@@ -23,16 +24,16 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         {/* admin */}
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/admin/boards" element={<BoardManagementPage />} />
-        <Route path="/admin/boards/create" element={<BoardCreatePage />} />
+        <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+        <Route path="/admin/boards" element={<ProtectedRoute><BoardManagementPage /></ProtectedRoute>} />
+        <Route path="/admin/boards/create" element={<ProtectedRoute><BoardCreatePage /></ProtectedRoute>} />
         {/* chatbot */}
-        <Route path="/chatbot" element={<ChatbotPage />} />
+        <Route path="/chatbot" element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
         {/* boards */}
-        <Route path="/boards" element={<BoardListPage />} />
-        <Route path="/boards/:boardId" element={<ArticleListPage />} />
-        <Route path="/boards/:boardId/articles/create" element={<ArticleCreatePage />} />
-        <Route path="/boards/:boardId/articles/:articleId" element={<ArticleDetailPage />} />
+        <Route path="/boards" element={<ProtectedRoute><BoardListPage /></ProtectedRoute>} />
+        <Route path="/boards/:boardId" element={<ProtectedRoute><ArticleListPage /></ProtectedRoute>} />
+        <Route path="/boards/:boardId/articles/create" element={<ProtectedRoute><ArticleCreatePage /></ProtectedRoute>} />
+        <Route path="/boards/:boardId/articles/:articleId" element={<ProtectedRoute><ArticleDetailPage /></ProtectedRoute>} />
       </Routes>
     </Layout>
   );

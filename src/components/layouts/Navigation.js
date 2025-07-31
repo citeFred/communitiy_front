@@ -1,20 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import { useAuth } from '../../common/hooks/useAuth';
 
 function Navigation() {
     const navigate = useNavigate();
-    const isLoggedIn = !!localStorage.getItem('accessToken');
-    const token = localStorage.getItem('accessToken');
-
-    let userRole = null;
-    if (token) {
-        try {
-            const decodedToken = jwtDecode(token);
-            userRole = decodedToken.role;
-        } catch (error) {
-            console.error("Invalid token:", error);
-        }
-    }
+    const { isLoggedIn, userRole } = useAuth();
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
@@ -36,13 +25,15 @@ function Navigation() {
                             <Link className="nav-link" to="/chatbot">AI 챗봇</Link>
                         </li>
 
-                        {userRole === 'ROLE_ADMIN' && (
+                        {/* useAuth에서 가져온 userRole로 관리자 링크를 렌더 */}
+                        {isLoggedIn && userRole === 'ROLE_ADMIN' && (
                             <li className="nav-item"><Link className="nav-link" to="/admin">관리자</Link></li>
                         )}
 
+                        {/* useAuth에서 가져온 isLoggedIn으로 메뉴를 동적으로 렌더 */}
                         {isLoggedIn ? (
                             <li className="nav-item">
-                                <button onClick={handleLogout} className="btn btn-outline-primary ms-2">로그아웃</button>
+                                <button onClick={handleLogout} className="btn btn-outline-light ms-2">로그아웃</button>
                             </li>
                         ) : (
                             <>
