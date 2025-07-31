@@ -11,8 +11,10 @@ SpringBoot(Java) + JPA(ORM) 게시판 웹 서비스
 
 ## 🚧 실행 추가 설정
 - 해당 저장소 코드 다운로드 또는 클론
-- React+BootStrap 프론트엔드 프로젝트로 마이그레이션
+- `npm install` node 관련 의존성 설치
+- React+TailwindCSS 프론트엔드 프로젝트로 마이그레이션
 - npm start로 localhost:3000에서 테스트
+- 백엔드 프로젝트와 동시 실행 필요
 
 ## 📌 주요 기능(Features - Functional Requirements)
 ### ✅ 게시판 - 관리자 권한(Admin Only)
