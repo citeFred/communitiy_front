@@ -1,5 +1,6 @@
 <p align="center">
-  <a href="https://spring.io/projects/spring-boot" target="blank"><img src="https://spring.io/img/projects/spring-boot.svg" width="120" alt="Nest Logo" /></a>
+  <a href="https://react.dev/" target="blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/768px-React-icon.svg.png" width="120" alt="React Logo" /></a>
+  <a href="https://tailwindcss.com/" target="blank"><img src="https://tailwindcss.com/_next/static/media/tailwindcss-mark.d52e9897.svg" width="160" alt="TailwindCss Logo" /></a>
 </p>
 
 # SpringBoot Community-App FE Sample
