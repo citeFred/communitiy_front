@@ -11,8 +11,9 @@ import ArticleDetailPage from './pages/boards/ArticleDetailPage';
 import ArticleCreatePage from './pages/boards/ArticleCreatePage';
 import BoardManagementPage from './pages/admin/board-management/BoardManagementPage';
 import BoardCreatePage from './pages/admin/board-management/BoardCreatePage';
-import ChatbotPage from './pages/chatbot/ChatbotPage';
 import ProtectedRoute from './common/protected-route/ProtectedRoute';
+import ChatPage from './pages/chatbot/ChatPage';
+import ChatRoomListPage from './pages/chatbot/ChatRoomListPage';
 
 function App() {
   return (
@@ -28,7 +29,8 @@ function App() {
         <Route path="/admin/boards" element={<ProtectedRoute><BoardManagementPage /></ProtectedRoute>} />
         <Route path="/admin/boards/create" element={<ProtectedRoute><BoardCreatePage /></ProtectedRoute>} />
         {/* chatbot */}
-        <Route path="/chatbot" element={<ProtectedRoute><ChatbotPage /></ProtectedRoute>} />
+        <Route path="/chatbot" element={<ProtectedRoute><ChatRoomListPage /></ProtectedRoute>} />
+        <Route path="/chatbot/:roomId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
         {/* boards */}
         <Route path="/boards" element={<ProtectedRoute><BoardListPage /></ProtectedRoute>} />
         <Route path="/boards/:boardId" element={<ProtectedRoute><ArticleListPage /></ProtectedRoute>} />
