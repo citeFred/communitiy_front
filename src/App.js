@@ -11,8 +11,7 @@ import ArticleDetailPage from './pages/boards/ArticleDetailPage';
 import ArticleCreatePage from './pages/boards/ArticleCreatePage';
 import BoardManagementPage from './pages/admin/board-management/BoardManagementPage';
 import BoardCreatePage from './pages/admin/board-management/BoardCreatePage';
-
-const ChatbotPage = () => <div><h2>챗봇 페이지</h2></div>;
+import ChatbotPage from './pages/chatbot/ChatbotPage';
 
 function App() {
   return (
