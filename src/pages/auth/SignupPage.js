@@ -28,7 +28,6 @@ function SignupPage() {
 
         try {
             await signup(formData);
-
             alert('회원가입 성공! 로그인 페이지로 이동합니다.');
             navigate('/login');
             
@@ -41,35 +40,62 @@ function SignupPage() {
     };
 
     return (
-        <main className="container" style={{ maxWidth: '400px' }}>
-            <div className="card">
-                <div className="card-body">
-                    <h1 className="card-title text-center mb-4">회원가입</h1>
-                    <form onSubmit={handleSignup}>
-                        <div className="mb-3">
-                            <label className="form-label">아이디:</label>
-                            <input type="text" name="username" className="form-control" onChange={handleChange} required />
-                        </div>
-                        <div className="mb-3">
-                            <label className="form-label">비밀번호:</label>
-                            <input type="password" name="password" className="form-control" onChange={handleChange} required />
-                        </div>
-                        <div className="mb-3">
-                            <label className="form-label">닉네임:</label>
-                            <input type="text" name="nickname" className="form-control" onChange={handleChange} required />
-                        </div>
-                        <div className="mb-3">
-                            <label className="form-label">이메일:</label>
-                            <input type="email" name="email" className="form-control" onChange={handleChange} required />
-                        </div>
-                        <button type="submit" className="btn btn-success w-100">회원가입</button>
-                    </form>
-                    {message && (
-                        <div className={`alert ${isError ? 'alert-danger' : 'alert-success'} mt-3`} role="alert">
-                            {message}
-                        </div>
-                    )}
-                </div>
+        <main className="flex items-center justify-center py-12 px-4">
+            <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+                <h1 className="text-3xl font-bold text-center mb-6">회원가입</h1>
+                <form onSubmit={handleSignup} className="space-y-4">
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">아이디:</label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            onChange={handleChange} 
+                            required 
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">비밀번호:</label>
+                        <input 
+                            type="password" 
+                            name="password" 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            onChange={handleChange} 
+                            required 
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">닉네임:</label>
+                        <input 
+                            type="text" 
+                            name="nickname" 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            onChange={handleChange} 
+                            required 
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700 text-sm font-bold mb-2">이메일:</label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            onChange={handleChange} 
+                            required 
+                        />
+                    </div>
+                    <button 
+                        type="submit" 
+                        className="w-full py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600"
+                    >
+                        회원가입
+                    </button>
+                </form>
+                {message && (
+                    <div className={`mt-4 p-4 rounded-md text-center ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`} role="alert">
+                        {message}
+                    </div>
+                )}
             </div>
         </main>
     );

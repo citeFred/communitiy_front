@@ -28,32 +28,59 @@ function ArticleCreatePage() {
 
     return (
         <div>
-            <div className="d-flex justify-content-between align-items-center">
-                <h2 className="pb-2 border-bottom">새 게시글 작성</h2>
-                <button onClick={() => navigate(`/boards/${boardId}`)} className="btn btn-secondary">작성 취소</button>
+            <div className="flex justify-between items-center pb-2 border-b mb-6">
+                <h2 className="text-3xl font-bold">새 게시글 작성</h2>
+                <button 
+                    onClick={() => navigate(`/boards/${boardId}`)} 
+                    className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600"
+                >
+                    작성 취소
+                </button>
             </div>
 
-            <div className="card my-4">
-                <div className="card-body">
-                    <form onSubmit={handleCreateArticle}>
-                        <div className="mb-3">
-                            <label htmlFor="title" className="form-label">제목</label>
-                            <input type="text" id="title" name="title" className="form-control" placeholder="제목" required />
-                        </div>
-                        <div className="mb-3">
-                            <label htmlFor="content" className="form-label">내용</label>
-                            <textarea id="content" name="content" className="form-control" rows="10" placeholder="내용" required></textarea>
-                        </div>
-                        <div className="mb-3">
-                            <label htmlFor="file" className="form-label">첨부 파일</label>
-                            <input type="file" id="file" name="file" className="form-control" />
-                        </div>
-                        <div className="d-grid">
-                            <button type="submit" className="btn btn-primary">등록하기</button>
-                        </div>
-                    </form>
-                    {error && <div className="form-text text-danger mt-2">{error}</div>}
-                </div>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+                <form onSubmit={handleCreateArticle}>
+                    <div className="mb-4">
+                        <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">제목</label>
+                        <input 
+                            type="text" 
+                            id="title" 
+                            name="title" 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            placeholder="제목을 입력하세요" 
+                            required 
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2">내용</label>
+                        <textarea 
+                            id="content" 
+                            name="content" 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            rows="10" 
+                            placeholder="내용을 입력하세요" 
+                            required
+                        ></textarea>
+                    </div>
+                    <div className="mb-6">
+                        <label htmlFor="file" className="block text-gray-700 text-sm font-bold mb-2">첨부 파일</label>
+                        <input 
+                            type="file" 
+                            id="file" 
+                            name="file" 
+                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                        />
+                    </div>
+                    <div className="grid">
+                        <button 
+                            type="submit" 
+                            className="w-full px-4 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600"
+                        >
+                            등록하기
+                        </button>
+                    </div>
+                </form>
+                {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
             </div>
         </div>
     );

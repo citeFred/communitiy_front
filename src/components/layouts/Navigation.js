@@ -13,35 +13,39 @@ function Navigation() {
     };
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div className="container-fluid">
-                <Link className="navbar-brand" to="/">Logo</Link>
-                <div>
-                    <ul className="navbar-nav align-items-center">
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/boards">게시판</Link>
+        <nav className="bg-gray-800 text-white shadow-md">
+            <div className="container mx-auto px-4">
+                <div className="flex justify-between items-center py-3">
+                    <Link className="text-xl font-bold hover:text-gray-300" to="/">Logo</Link>
+                    
+                    <ul className="flex items-center space-x-4">
+                        <li>
+                            <Link className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700" to="/boards">게시판</Link>
                         </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/chatbot">AI 챗봇</Link>
+                        <li>
+                            <Link className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700" to="/chatbot">AI 챗봇</Link>
                         </li>
 
-                        {/* useAuth에서 가져온 userRole로 관리자 링크를 렌더 */}
                         {isLoggedIn && userRole === 'ROLE_ADMIN' && (
-                            <li className="nav-item"><Link className="nav-link" to="/admin">관리자</Link></li>
+                            <li><Link className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700" to="/admin">관리자</Link></li>
                         )}
 
-                        {/* useAuth에서 가져온 isLoggedIn으로 메뉴를 동적으로 렌더 */}
                         {isLoggedIn ? (
-                            <li className="nav-item">
-                                <button onClick={handleLogout} className="btn btn-outline-light ms-2">로그아웃</button>
+                            <li>
+                                <button 
+                                    onClick={handleLogout} 
+                                    className="px-3 py-2 border border-gray-500 rounded-md text-sm font-medium hover:bg-gray-700 hover:text-white"
+                                >
+                                    로그아웃
+                                </button>
                             </li>
                         ) : (
                             <>
-                                <li className="nav-item">
-                                    <Link className="nav-link" to="/login">로그인</Link>
+                                <li>
+                                    <Link className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700" to="/login">로그인</Link>
                                 </li>
-                                <li className="nav-item">
-                                    <Link className="nav-link" to="/signup">회원가입</Link>
+                                <li>
+                                    <Link className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700" to="/signup">회원가입</Link>
                                 </li>
                             </>
                         )}

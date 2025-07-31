@@ -25,9 +25,9 @@ function BoardListPage() {
 
     return (
         <div>
-            <h2 className="pb-2 border-bottom">게시판 목록</h2>
-            <p className="text-muted">관심 있는 게시판을 선택하여 입장하세요.</p>
-            <div className="row row-cols-1 row-cols-md-3 g-4 mt-3">
+            <h2 className="pb-2 text-3xl font-bold border-b">게시판 목록</h2>
+            <p className="mt-2 text-gray-500">관심 있는 게시판을 선택하여 입장하세요.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 {boards.length > 0 ? boards.map(board => (
                     <ActionCard
                         key={board.id}
@@ -36,7 +36,7 @@ function BoardListPage() {
                         buttonText="입장하기"
                         onButtonClick={() => handleBoardSelect(board.id)}
                     />
-                )) : <p>생성된 게시판이 없습니다.</p>}
+                )) : <p className="col-span-full text-center text-gray-500">생성된 게시판이 없습니다.</p>}
             </div>
         </div>
     );

@@ -6,10 +6,12 @@ function AdminPage() {
 
     return (
         <div>
-            <h2 className="pb-2 border-bottom">관리자 대시보드</h2>
-            <p className="text-muted">여기에서 사이트의 여러 기능을 관리할 수 있습니다.</p>
+            <div className="pb-2 border-b mb-6">
+                <h2 className="text-3xl font-bold">관리자 대시보드</h2>
+                <p className="mt-2 text-gray-500">여기에서 사이트의 여러 기능을 관리할 수 있습니다.</p>
+            </div>
             
-            <div className="row row-cols-1 row-cols-md-3 g-4 mt-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <ActionCard
                     title="게시판 관리"
                     text="새로운 게시판을 생성하거나 기존 게시판을 관리합니다."

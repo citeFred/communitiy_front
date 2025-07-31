@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getChatDialogs, postMessage } from '../../api/features/chatbot';
-import './ChatbotPage.css'; // 기존 CSS 재사용
 
 function ChatPage() {
     const [dialogs, setDialogs] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const { roomId } = useParams(); // URL에서 roomId 가져오기
+    const { roomId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const chatWindowRef = useRef(null);
+    const roomTitle = location.state?.title || '채팅';
 
     useEffect(() => {
         const fetchDialogs = async () => {
@@ -54,23 +55,51 @@ function ChatPage() {
     };
     
     return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2 className="pb-2">채팅</h2>
-                <button onClick={() => navigate('/chatbot')} className="btn btn-secondary">대화방 목록으로</button>
+        <div className="flex flex-col h-full" style={{height: 'calc(100vh - 150px)'}}>
+            <div className="flex justify-between items-center mb-4 pb-2 border-b">
+                <h2 className="text-2xl font-bold truncate">{roomTitle}</h2>
+                <button 
+                    onClick={() => navigate('/chatbot')} 
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                    대화방 목록으로
+                </button>
             </div>
-            <div ref={chatWindowRef} className="chat-window">
+
+            <div ref={chatWindowRef} className="flex-grow overflow-y-auto p-4 bg-gray-100 rounded-lg flex flex-col space-y-4">
                 {dialogs.map((dialog, index) => (
-                    <div key={index} className={`chat-message ${dialog.senderType === 'USER' ? 'user-message' : 'assistant-message'}`}>
+                    <div 
+                        key={index} 
+                        className={`max-w-[80%] w-fit p-3 rounded-xl break-words ${
+                            dialog.senderType === 'USER' 
+                            ? 'bg-blue-500 text-white self-end rounded-br-lg' 
+                            : 'bg-white text-gray-800 self-start rounded-bl-lg'
+                        }`}
+                    >
                         {dialog.content}
                     </div>
                 ))}
-                {isLoading && <div className="chat-message assistant-message">...</div>}
+                {isLoading && <div className="p-3 rounded-xl bg-white text-gray-800 self-start">...</div>}
             </div>
-            <form onSubmit={handleSendMessage} className="mt-3">
-                <div className="input-group">
-                    <input type="text" name="message" className="form-control" placeholder="메시지를 입력하세요..." autoComplete="off" required disabled={isLoading} />
-                    <button className="btn btn-success" type="submit" disabled={isLoading}>전송</button>
+
+            <form onSubmit={handleSendMessage} className="mt-4">
+                <div className="flex gap-2">
+                    <input 
+                        type="text" 
+                        name="message" 
+                        className="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" 
+                        placeholder="메시지를 입력하세요..." 
+                        autoComplete="off" 
+                        required 
+                        disabled={isLoading} 
+                    />
+                    <button 
+                        type="submit" 
+                        className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 disabled:bg-green-300"
+                        disabled={isLoading}
+                    >
+                        전송
+                    </button>
                 </div>
             </form>
         </div>
