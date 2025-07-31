@@ -1,58 +1,37 @@
-import { useState, useEffect } from 'react';
-import { getBoards, createBoard } from '../../api/features/boards';
+import { useNavigate } from 'react-router-dom';
+import ActionCard from '../../components/cards/ActionCard';
 
 function AdminPage() {
-    const [boards, setBoards] = useState([]);
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchBoards = async () => {
-            try {
-                const response = await getBoards();
-                setBoards(response.data);
-            } catch (error) {
-                console.error("게시판 목록 조회 실패", error);
-            }
-        };
-
-        fetchBoards();
-    }, []);
-
-    const handleCreateBoard = async (e) => {
-        e.preventDefault();
-        const title = e.target.boardTitle.value;
-        if (!title) return;
-        try {
-            await createBoard(title);
-            e.target.reset();
-            
-            const response = await getBoards();
-            setBoards(response.data);
-
-        } catch (error) {
-            console.error("게시판 생성 실패", error);
-            alert("게시판 생성에 실패했습니다.");
-        }
-    };
-    
     return (
         <div>
-            <h2 className="pb-2 border-bottom">관리자 페이지</h2>
-            <div className="card my-4">
-                <div className="card-body">
-                    <h5 className="card-title">새 게시판 생성</h5>
-                    <form onSubmit={handleCreateBoard} className="d-flex">
-                        <input type="text" name="boardTitle" className="form-control me-2" placeholder="새 게시판 이름" required />
-                        <button type="submit" className="btn btn-success text-nowrap">생성</button>
-                    </form>
-                </div>
+            <h2 className="pb-2 border-bottom">관리자 대시보드</h2>
+            <p className="text-muted">여기에서 사이트의 여러 기능을 관리할 수 있습니다.</p>
+            
+            <div className="row row-cols-1 row-cols-md-3 g-4 mt-3">
+                <ActionCard
+                    title="게시판 관리"
+                    text="새로운 게시판을 생성하거나 기존 게시판을 관리합니다."
+                    buttonText="관리하기"
+                    onButtonClick={() => navigate('/admin/boards')}
+                    buttonVariant="dark"
+                />
+                <ActionCard
+                    title="사용자 관리"
+                    text="사이트의 사용자를 관리합니다."
+                    buttonText="준비 중"
+                    onButtonClick={() => {}}
+                    buttonVariant="secondary"
+                /> 
+               <ActionCard
+                   title="서비스 설정"
+                   text="웹 서비스의 전반적인 설정을 관리합니다."
+                   buttonText="준비 중"
+                   onButtonClick={() => {}}
+                   buttonVariant="secondary"
+               />
             </div>
-            <hr />
-            <h4>현재 게시판 목록</h4>
-            <ul className="list-group">
-                {boards.map(board => (
-                    <li key={board.id} className="list-group-item">{board.title}</li>
-                ))}
-            </ul>
         </div>
     );
 }
