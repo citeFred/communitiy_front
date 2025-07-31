@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getChatDialogs, postMessage } from '../../api/features/chatbot';
+// import './ChatbotPage.css'; // 더 이상 CSS 파일이 필요 없습니다.
 
 function ChatPage() {
     const [dialogs, setDialogs] = useState([]);
@@ -55,8 +56,8 @@ function ChatPage() {
     };
     
     return (
-        <div className="flex flex-col h-full" style={{height: 'calc(100vh - 150px)'}}>
-            <div className="flex justify-between items-center mb-4 pb-2 border-b">
+        <div className="flex flex-col" style={{height: 'calc(100vh - 200px)'}}>
+            <div className="flex justify-between items-center mb-4 pb-2 border-b flex-shrink-0">
                 <h2 className="text-2xl font-bold truncate">{roomTitle}</h2>
                 <button 
                     onClick={() => navigate('/chatbot')} 
@@ -82,7 +83,7 @@ function ChatPage() {
                 {isLoading && <div className="p-3 rounded-xl bg-white text-gray-800 self-start">...</div>}
             </div>
 
-            <form onSubmit={handleSendMessage} className="mt-4">
+            <form onSubmit={handleSendMessage} className="mt-4 flex-shrink-0">
                 <div className="flex gap-2">
                     <input 
                         type="text" 
