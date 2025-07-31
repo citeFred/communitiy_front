@@ -1,31 +1,29 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../../api/features/auth';
 
 function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error('로그인 실패');
-            }
-
-            localStorage.setItem('accessToken', result.accessToken);
+            const response = await login(username, password);
+            
+            localStorage.setItem('accessToken', response.data.accessToken);
             alert('로그인 성공!');
-            window.location.href = '/board';
+            
+            navigate('/');
+            window.location.reload();
+
         } catch (err) {
             setError('아이디 또는 비밀번호를 확인해주세요.');
+            console.error('Login failed:', err);
         }
     };
 

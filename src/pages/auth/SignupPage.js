@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { signup } from '../../api/features/auth';
 
 function SignupPage() {
     const [formData, setFormData] = useState({
@@ -9,6 +11,7 @@ function SignupPage() {
     });
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,22 +27,16 @@ function SignupPage() {
         setIsError(false);
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+            await signup(formData);
 
-            const resultText = await response.text();
-            if (!response.ok) {
-                throw new Error(resultText);
-            }
-
-            setMessage('회원가입 성공! 로그인 페이지로 이동하여 로그인해주세요.');
-            e.target.reset();
+            alert('회원가입 성공! 로그인 페이지로 이동합니다.');
+            navigate('/login');
+            
         } catch (err) {
-            setMessage(`회원가입 실패: ${err.message}`);
+            const errorMessage = err.response?.data || '알 수 없는 오류가 발생했습니다.';
+            setMessage(`회원가입 실패: ${errorMessage}`);
             setIsError(true);
+            console.error('Signup failed:', err);
         }
     };
 

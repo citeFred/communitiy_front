@@ -11,8 +11,8 @@ SpringBoot(Java) + JPA(ORM) 게시판 웹 서비스
 
 ## 🚧 실행 추가 설정
 - 해당 저장소 코드 다운로드 또는 클론
-- *VSCode*의 Market Place에서 *Live Server* 플러그인 설치
-- Live Server 실행 후 http://127.0.0.1:5500 테스트
+- React+BootStrap 프론트엔드 프로젝트로 마이그레이션
+- npm start로 localhost:3000에서 테스트
 
 ## 📌 주요 기능(Features - Functional Requirements)
 ### ✅ 게시판 - 관리자 권한(Admin Only)

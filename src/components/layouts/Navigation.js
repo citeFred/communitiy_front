@@ -1,8 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 function Navigation() {
     const navigate = useNavigate();
     const isLoggedIn = !!localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
+
+    let userRole = null;
+    if (token) {
+        try {
+            const decodedToken = jwtDecode(token);
+            userRole = decodedToken.role;
+        } catch (error) {
+            console.error("Invalid token:", error);
+        }
+    }
 
     const handleLogout = () => {
         localStorage.removeItem('accessToken');
@@ -18,11 +30,15 @@ function Navigation() {
                 <div>
                     <ul className="navbar-nav align-items-center">
                         <li className="nav-item">
-                            <Link className="nav-link" to="/board">게시판</Link>
+                            <Link className="nav-link" to="/boards">게시판</Link>
                         </li>
                         <li className="nav-item">
                             <Link className="nav-link" to="/chatbot">AI 챗봇</Link>
                         </li>
+
+                        {userRole === 'ROLE_ADMIN' && (
+                            <li className="nav-item"><Link className="nav-link" to="/admin">관리자</Link></li>
+                        )}
 
                         {isLoggedIn ? (
                             <li className="nav-item">

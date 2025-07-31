@@ -17,7 +17,7 @@ function HomePage() {
                             <p className="card-text flex-grow-1">
                                 자유롭게 글을 작성하고 다른 사람들과 의견을 나눠보세요.
                             </p>
-                            <Link to="/board" className="btn btn-primary mt-auto">게시판으로 이동 &rarr;</Link>
+                            <Link to="/boards" className="btn btn-primary mt-auto">게시판으로 이동 &rarr;</Link>
                         </div>
                     </div>
                 </div>
