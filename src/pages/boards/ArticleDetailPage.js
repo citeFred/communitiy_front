@@ -1,13 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getArticleDetail } from '../../api/features/articles';
 import { createComment } from '../../api/features/comments';
+import CommentSection from './CommentSection';
 
 function ArticleDetailPage() {
     const [article, setArticle] = useState(null);
     const { boardId, articleId } = useParams();
     const navigate = useNavigate();
     
+    const nestedComments = useMemo(() => {
+        if (!article?.comments) return [];
+
+        const commentMap = new Map();
+        const rootComments = [];
+        
+        article.comments.forEach(comment => {
+            commentMap.set(comment.id, { ...comment, childComments: [] });
+        });
+
+        article.comments.forEach(comment => {
+            if (comment.parentCommentId && commentMap.has(comment.parentCommentId)) {
+                commentMap.get(comment.parentCommentId).childComments.push(commentMap.get(comment.id));
+            } else {
+                rootComments.push(commentMap.get(comment.id));
+            }
+        });
+        
+        return rootComments;
+    }, [article]);
+
     useEffect(() => {
         const fetchArticle = async () => {
             try {
@@ -18,21 +40,18 @@ function ArticleDetailPage() {
                 navigate(`/boards/${boardId}`);
             }
         };
-
         fetchArticle();
     }, [boardId, articleId, navigate]);
 
-    const handleCreateComment = async (e) => {
-        e.preventDefault();
-        const content = e.target.commentContent.value;
+    const handleCreateComment = async (content, parentCommentId) => {
+        // --- 디버깅용 alert 추가 ---
+        // alert(`API 호출 직전내용: ${content}부모 댓글 ID: ${parentCommentId}`);
+        // -------------------------
         if (!content) return;
         try {
-            await createComment(boardId, articleId, content);
-            e.target.reset();
-            
+            await createComment(boardId, articleId, content, parentCommentId);
             const response = await getArticleDetail(boardId, articleId);
             setArticle(response.data);
-
         } catch (error) {
             console.error("댓글 작성 실패", error);
             alert("댓글 작성에 실패했습니다.");
@@ -65,34 +84,11 @@ function ArticleDetailPage() {
             <div className="prose max-w-none bg-white p-4 rounded-md">
                 <pre className="whitespace-pre-wrap break-words font-sans">{article.content}</pre>
             </div>
-            <hr className="my-8" />
-            <h3 className="text-2xl font-bold mb-4">댓글</h3>
-            <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-                <form onSubmit={handleCreateComment}>
-                    <div className="mb-3">
-                        <textarea 
-                            name="commentContent" 
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                            rows="3" 
-                            placeholder="댓글을 입력하세요..." 
-                            required
-                        ></textarea>
-                    </div>
-                    <button 
-                        type="submit" 
-                        className="px-4 py-2 bg-cyan-500 text-white font-semibold rounded-lg hover:bg-cyan-600"
-                    >
-                        댓글 등록
-                    </button>
-                </form>
-            </div>
-            <ul className="space-y-3">
-                {article.comments && article.comments.length > 0 ? article.comments.map(comment => (
-                    <li key={comment.id} className="p-4 bg-gray-50 border rounded-lg">
-                        <strong className="font-semibold">익명:</strong> {comment.content}
-                    </li>
-                )) : <li className="p-4 text-center text-gray-500 bg-gray-100 rounded-lg">댓글이 없습니다.</li>}
-            </ul>
+            
+            <CommentSection 
+                comments={nestedComments} 
+                onCommentSubmit={handleCreateComment}
+            />
         </div>
     );
 }
