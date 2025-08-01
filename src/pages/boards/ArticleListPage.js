@@ -5,46 +5,48 @@ import { getArticlesByBoard } from '../../api/features/articles';
 function ArticleListPage() {
     const [pageData, setPageData] = useState({
         content: [],
-        page: {
-            totalPages: 0,
-            number: 0,
-            totalElements: 0,
-        },
+        page: { totalPages: 0, number: 0, totalElements: 0 },
     });
     const { boardId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
     const boardTitle = location.state?.boardTitle || '게시글 목록';
 
-    const fetchArticles = async (page = 0) => {
+    useEffect(() => {
+        const fetchArticles = async (page = 0) => {
+            try {
+                const response = await getArticlesByBoard(boardId, page);
+                setPageData(response.data);
+            } catch (error) {
+                console.error("게시글 목록 조회 실패", error);
+            }
+        };
+
+        fetchArticles(0);
+    }, [boardId]);
+
+    const handlePageChange = async (pageNumber) => {
         try {
-            const response = await getArticlesByBoard(boardId, page);
+            const response = await getArticlesByBoard(boardId, pageNumber);
             setPageData(response.data);
         } catch (error) {
             console.error("게시글 목록 조회 실패", error);
         }
     };
 
-    useEffect(() => {
-        fetchArticles(0);
-    }, [boardId]);
-
-    const handlePageChange = (pageNumber) => {
-        fetchArticles(pageNumber);
-    };
-
     return (
         <div>
             <div className="flex justify-between items-center pb-2 border-b">
                 <h2 className="text-3xl font-bold">{boardTitle}</h2>
-                <button 
-                    onClick={() => navigate('/boards')} 
+                <button
+                    onClick={() => navigate('/boards')}
                     className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600"
                 >
                     게시판 목록으로
                 </button>
             </div>
 
+            {/* 테이블 UI */}
             <div className="mt-6">
                 <table className="w-full text-sm text-left text-gray-500">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -57,13 +59,12 @@ function ArticleListPage() {
                     </thead>
                     <tbody>
                         {pageData.content.length > 0 ? pageData.content.map((article, index) => (
-                            <tr 
-                                key={article.id} 
+                            <tr
+                                key={article.id}
                                 onClick={() => navigate(`/boards/${boardId}/articles/${article.id}`)}
                                 className="bg-white border-b hover:bg-gray-50 cursor-pointer"
                             >
                                 <td className="px-6 py-4 text-center">
-                                    {/* pageData.page 객체 내부의 값에 접근하도록 수정 */}
                                     {pageData.page.totalElements - (pageData.page.number * 10) - index}
                                 </td>
                                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
@@ -81,8 +82,8 @@ function ArticleListPage() {
                 </table>
             </div>
 
-            {/* pageData.page 객체 내부의 값에 접근하도록 수정 */}
-            {pageData.page.totalPages > 0 && (
+            {/* 페이징 UI */}
+            {pageData.page.totalPages > 1 && (
                 <div className="flex justify-center items-center mt-6">
                     <nav>
                         <ul className="inline-flex -space-x-px">
@@ -91,8 +92,8 @@ function ArticleListPage() {
                                     <button
                                         onClick={() => handlePageChange(i)}
                                         className={`px-3 py-2 leading-tight ${
-                                            pageData.page.number === i 
-                                            ? 'bg-blue-500 text-white' 
+                                            pageData.page.number === i
+                                            ? 'bg-blue-500 text-white'
                                             : 'bg-white text-gray-500 hover:bg-gray-100'
                                         } border border-gray-300`}
                                     >
@@ -105,9 +106,10 @@ function ArticleListPage() {
                 </div>
             )}
             
+            {/* 글쓰기 버튼 */}
             <div className="flex justify-end mt-6">
-                <button 
-                    onClick={() => navigate(`/boards/${boardId}/articles/create`)} 
+                <button
+                    onClick={() => navigate(`/boards/${boardId}/articles/create`)}
                     className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600"
                 >
                     새 글 작성
