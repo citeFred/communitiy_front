@@ -19,8 +19,8 @@ function BoardListPage() {
         fetchBoards();
     }, []);
 
-    const handleBoardSelect = (boardId) => {
-        navigate(`/boards/${boardId}`);
+    const handleBoardSelect = (board) => {
+        navigate(`/boards/${board.id}`, { state: { boardTitle: board.title } });
     };
 
     return (
@@ -34,7 +34,7 @@ function BoardListPage() {
                         title={board.title}
                         text={`"${board.title}" 게시판입니다.`}
                         buttonText="입장하기"
-                        onButtonClick={() => handleBoardSelect(board.id)}
+                        onButtonClick={() => handleBoardSelect(board)}
                     />
                 )) : <p className="col-span-full text-center text-gray-500">생성된 게시판이 없습니다.</p>}
             </div>
