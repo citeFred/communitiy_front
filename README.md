@@ -45,3 +45,4 @@ SpringBoot(Java) + JPA(ORM) 게시판 웹 서비스
 <img width="879" height="532" alt="스크린샷 2025-07-31 204655" src="https://github.com/user-attachments/assets/f2155f1d-c88c-4e04-90a8-a0bdebbf0251" />
 <img width="879" height="532" alt="스크린샷 2025-07-31 205826" src="https://github.com/user-attachments/assets/e9f3ec81-4f3c-4a9a-826a-148b76b2a444" />
 <img width="879" height="532" alt="스크린샷 2025-07-31 205833" src="https://github.com/user-attachments/assets/b0414d94-e36d-4430-88a9-2545c0d9392f" />
+<img width="879" height="532" alt="image" src="https://github.com/user-attachments/assets/fbe52150-629c-4afc-a73a-bfbc8509555d" />
